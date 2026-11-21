@@ -24,7 +24,9 @@ export default function SavedRepositories() {
   const repositories = result?.repositories ?? [];
   const totalPages = result?.totalPages ?? 0;
   const currentPage = (result?.page ?? query.page) + 1;
-  const hasFilters = Boolean(query.language || query.minStars !== "");
+  const hasFilters = Boolean(
+    query.language || query.minStars !== "" || query.minForks !== "" || query.updatedFrom || query.updatedTo,
+  );
   const summary = result
     ? formatRange(result.page, result.size, repositories.length, result.totalElements)
     : "";

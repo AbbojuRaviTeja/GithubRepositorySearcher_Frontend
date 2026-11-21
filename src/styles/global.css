@@ -125,7 +125,8 @@ a:hover {
 }
 
 .search-form,
-.filter-form {
+.filter-form,
+.narrow-form {
   display: grid;
   gap: 14px 16px;
   align-items: end;
@@ -135,8 +136,13 @@ a:hover {
   grid-template-columns: 1fr 1fr;
 }
 
-.filter-form {
-  grid-template-columns: minmax(0, 1.4fr) minmax(120px, 0.8fr) minmax(150px, 0.9fr) auto;
+.filter-form,
+.narrow-form {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.narrow-form {
+  margin-bottom: 14px;
 }
 
 .field {
@@ -176,6 +182,7 @@ input::placeholder {
 }
 
 .search-form .form-actions,
+.filter-form .form-actions,
 .filter-form .hint {
   grid-column: 1 / -1;
 }
@@ -293,8 +300,35 @@ input::placeholder {
 .repo-top {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: 12px;
+}
+
+.repo-side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.bookmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bookmark-on {
+  border-color: #1c2128;
+  background: #1c2128;
+  color: #ffffff;
 }
 
 .repo-name {
@@ -426,8 +460,15 @@ input::placeholder {
 
   .search-form,
   .filter-form,
+  .narrow-form,
   .detail dl {
     grid-template-columns: 1fr;
+  }
+
+  .repo-top,
+  .repo-side {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .page-title {

@@ -41,6 +41,12 @@ export function toApiError(error) {
     return new ApiError({ message: "Something went wrong. Try again." });
   }
 
+  if (error.code === "ERR_CANCELED") {
+    const canceled = new ApiError({ message: "" });
+    canceled.canceled = true;
+    return canceled;
+  }
+
   if (error.code === "ECONNABORTED") {
     return new ApiError({ message: "The request timed out. Try again in a moment." });
   }
@@ -80,6 +86,30 @@ export function toApiError(error) {
   return new ApiError({ message, status, fieldErrors, retryAfter });
 }
 
+const responseCache = new Map();
+const CACHE_MS = 60000;
+
+function cacheKey(method, payload) {
+  return `${method}:${JSON.stringify(payload)}`;
+}
+
+function readCache(key) {
+  const hit = responseCache.get(key);
+  if (!hit) {
+    return null;
+  }
+  if (Date.now() - hit.at > CACHE_MS) {
+    responseCache.delete(key);
+    return null;
+  }
+  return hit.data;
+}
+
+function writeCache(key, data) {
+  responseCache.set(key, { at: Date.now(), data });
+  return data;
+}
+
 async function request(executor) {
   try {
     const response = await executor();
@@ -89,7 +119,7 @@ async function request(executor) {
   }
 }
 
-export function searchRepositories({ query, language, sort }) {
+export function searchRepositories({ query, language, sort, signal }) {
   const body = { query };
   if (language) {
     body.language = language;
@@ -97,10 +127,15 @@ export function searchRepositories({ query, language, sort }) {
   if (sort) {
     body.sort = sort;
   }
-  return request(() => apiClient.post("/api/github/search", body));
+  const key = cacheKey("search", body);
+  const cached = readCache(key);
+  if (cached) {
+    return Promise.resolve(cached);
+  }
+  return request(() => apiClient.post("/api/github/search", body, { signal })).then((data) => writeCache(key, data));
 }
 
-export function listRepositories({ language, minStars, sort, page, size }) {
+export function listRepositories({ language, minStars, minForks, updatedFrom, updatedTo, sort, page, size, signal }) {
   const params = {
     page,
     size,
@@ -111,10 +146,28 @@ export function listRepositories({ language, minStars, sort, page, size }) {
   if (minStars !== undefined && minStars !== null && minStars !== "") {
     params.minStars = minStars;
   }
+  if (minForks !== undefined && minForks !== null && minForks !== "") {
+    params.minForks = minForks;
+  }
+  if (updatedFrom) {
+    params.updatedFrom = updatedFrom;
+  }
+  if (updatedTo) {
+    params.updatedTo = updatedTo;
+  }
   if (sort) {
     params.sort = sort;
   }
-  return request(() => apiClient.get("/api/github/repositories", { params }));
+  const key = cacheKey("list", params);
+  const cached = readCache(key);
+  if (cached) {
+    return Promise.resolve(cached);
+  }
+  return request(() => apiClient.get("/api/github/repositories", { params, signal })).then((data) => writeCache(key, data));
+}
+
+export function warmApi() {
+  return listRepositories({ page: 0, size: 1, sort: "stars" }).catch(() => null);
 }
 
 export function getRepository(githubId) {

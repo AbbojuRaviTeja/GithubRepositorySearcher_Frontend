@@ -14,6 +14,9 @@ export default function Navbar() {
           <NavLink to="/saved">
             Saved
           </NavLink>
+          <NavLink to="/bookmarks">
+            Bookmarks
+          </NavLink>
         </nav>
       </div>
     </header>

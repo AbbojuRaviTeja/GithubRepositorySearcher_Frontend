@@ -34,6 +34,36 @@ export default function FilterPanel({ draft, onChange, onSubmit, disabled }) {
         />
       </label>
       <label className="field">
+        <span>Minimum forks</span>
+        <input
+          name="minForks"
+          type="text"
+          inputMode="numeric"
+          value={draft.minForks}
+          autoComplete="off"
+          placeholder="0"
+          onChange={(event) => onChange("minForks", event.target.value)}
+        />
+      </label>
+      <label className="field">
+        <span>Updated from</span>
+        <input
+          name="updatedFrom"
+          type="date"
+          value={draft.updatedFrom}
+          onChange={(event) => onChange("updatedFrom", event.target.value)}
+        />
+      </label>
+      <label className="field">
+        <span>Updated to</span>
+        <input
+          name="updatedTo"
+          type="date"
+          value={draft.updatedTo}
+          onChange={(event) => onChange("updatedTo", event.target.value)}
+        />
+      </label>
+      <label className="field">
         <span>Sort</span>
         <select
           name="sort"
@@ -53,7 +83,7 @@ export default function FilterPanel({ draft, onChange, onSubmit, disabled }) {
         </button>
       </div>
       <p className="hint field-wide">
-        Language matches the stored name exactly, ignoring case. Minimum stars is inclusive.
+        Language matches the stored name exactly, ignoring case. Dates use the repository update day in UTC.
       </p>
     </form>
   );

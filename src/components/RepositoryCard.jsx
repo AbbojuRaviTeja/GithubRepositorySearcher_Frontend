@@ -1,10 +1,13 @@
-import { GitFork, Star } from "lucide-react";
+import { Bookmark, GitFork, Star } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useBookmarks } from "../hooks/useBookmarks";
 import { formatCount, formatDate, githubUrl } from "../utils/formatters";
 
 export default function RepositoryCard({ repository }) {
   const href = githubUrl(repository);
   const name = repository.name || "Untitled repository";
+  const { has, toggle } = useBookmarks();
+  const saved = has(repository.id);
 
   return (
     <li className="repo">
@@ -16,7 +19,18 @@ export default function RepositoryCard({ repository }) {
         ) : (
           <span className="repo-name">{name}</span>
         )}
-        <span className="repo-lang">{repository.language || "Language unknown"}</span>
+        <div className="repo-side">
+          <span className="repo-lang">{repository.language || "Language unknown"}</span>
+          <button
+            type="button"
+            className={saved ? "bookmark bookmark-on" : "bookmark"}
+            aria-pressed={saved}
+            onClick={() => toggle(repository)}
+          >
+            <Bookmark size={14} aria-hidden="true" />
+            {saved ? "Saved" : "Save"}
+          </button>
+        </div>
       </div>
       <p className="repo-desc">{repository.description || "No description provided."}</p>
       <div className="repo-meta">

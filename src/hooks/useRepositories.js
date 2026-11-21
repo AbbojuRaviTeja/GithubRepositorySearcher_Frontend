@@ -5,6 +5,9 @@ import { validateSavedFilters } from "../utils/validation";
 const INITIAL_QUERY = {
   language: "",
   minStars: "",
+  minForks: "",
+  updatedFrom: "",
+  updatedTo: "",
   sort: "stars",
   page: 0,
   size: 20,
@@ -15,6 +18,9 @@ export function useRepositories() {
   const [draft, setDraft] = useState({
     language: "",
     minStars: "",
+    minForks: "",
+    updatedFrom: "",
+    updatedTo: "",
     sort: "stars",
   });
   const [query, setQuery] = useState(INITIAL_QUERY);
@@ -24,14 +30,19 @@ export function useRepositories() {
   const [filterError, setFilterError] = useState("");
 
   useEffect(() => {
+    const controller = new AbortController();
     let ignore = false;
 
     listRepositories({
       language: query.language,
       minStars: query.minStars === "" ? undefined : Number(query.minStars),
+      minForks: query.minForks === "" ? undefined : Number(query.minForks),
+      updatedFrom: query.updatedFrom,
+      updatedTo: query.updatedTo,
       sort: query.sort,
       page: query.page,
       size: query.size,
+      signal: controller.signal,
     })
       .then((data) => {
         if (!ignore) {
@@ -40,10 +51,11 @@ export function useRepositories() {
         }
       })
       .catch((err) => {
-        if (!ignore) {
-          setResult(null);
-          setError(err);
+        if (ignore || err?.canceled) {
+          return;
         }
+        setResult(null);
+        setError(err);
       })
       .finally(() => {
         if (!ignore) {
@@ -53,6 +65,7 @@ export function useRepositories() {
 
     return () => {
       ignore = true;
+      controller.abort();
     };
   }, [query]);
 
@@ -74,6 +87,9 @@ export function useRepositories() {
     setQuery((current) => ({
       language: draft.language.trim(),
       minStars: draft.minStars.trim(),
+      minForks: draft.minForks.trim(),
+      updatedFrom: draft.updatedFrom,
+      updatedTo: draft.updatedTo,
       sort: draft.sort,
       page: 0,
       size: current.size,
