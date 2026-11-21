@@ -46,8 +46,11 @@ export function toApiError(error) {
   }
 
   if (!error.response) {
+    const target = apiClient.defaults.baseURL || "http://localhost:8080";
     return new ApiError({
-      message: "The backend is unavailable. Start it on port 8080 and try again.",
+      message: target.startsWith("http://localhost")
+        ? "The backend is unavailable. Start it on port 8080 and try again."
+        : "The API could not be reached. If this site is hosted separately from the API, the API must allow this site's address.",
     });
   }
 
